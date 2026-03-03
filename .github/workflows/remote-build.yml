@@ -1,0 +1,37 @@
+name: Remote Flutter Build & Deploy
+
+on:
+  repository_dispatch:
+    types: [trigger-build]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Private Repo (tapscore)
+        uses: actions/checkout@v4
+        with:
+          repository: zmsp/tapscore
+          token: ${{ secrets.GH_PAT }}
+          path: tapscore
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build Web
+        run: |
+          cd tapscore
+          flutter pub get
+          flutter build web --release
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.7.2
+        with:
+          token: ${{ secrets.GH_PAT }}
+          branch: gh-pages # The branch the action should deploy to.
+          folder: tapscore/build/web # The folder the action should deploy.
+          repository-name: zmsp/scoreboard
+          clean: true # Automatically remove deleted files from the target branch
