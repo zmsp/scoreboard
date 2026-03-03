@@ -8,13 +8,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # We must checkout a repository to the root so the environment is a valid git directory
       - name: Checkout Source Repo
         uses: actions/checkout@v4
         with:
           repository: ${{ github.event.client_payload.source_repo }}
           ref: ${{ github.event.client_payload.ref }}
           token: ${{ secrets.GH_PAT }}
-          path: source_code
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -24,7 +24,6 @@ jobs:
 
       - name: Build Web
         run: |
-          cd source_code
           flutter pub get
           flutter build web --release
 
@@ -33,7 +32,7 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
           branch: gh-pages
-          folder: source_code/build/web
+          folder: build/web # This is now at the root
           repository-name: ${{ github.event.client_payload.target_repo }}
           clean: true
           commit-message: "Deploy from ${{ github.event.client_payload.source_repo }}@${{ github.event.client_payload.sha }}"
